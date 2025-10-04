@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veritas - Misinformation Detector</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m12 19-7-7 7-7'/%3E%3Cpath d='m19 12-7 7'/%3E%3C/svg%3E">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Lighter gray background */
+        }
+        .card-gradient {
+            background: linear-gradient(145deg, #ffffff, #e6e9f0);
+        }
+        .btn-gradient {
+             background: linear-gradient(90deg, #4f46e5, #7c3aed);
+        }
+        .btn-gradient:hover {
+             background: linear-gradient(90deg, #4338ca, #6d28d9);
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-600"><path d="m12 19-7-7 7-7"/><path d="m19 12-7 7"/></svg>
+                        <span class="text-2xl font-bold text-slate-800">Veritas</span>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#home" class="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                        <a href="#analyzer" class="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Analyzer</a>
+                        <a href="#news" class="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">News Feed</a>
+                        <a href="#about" class="text-slate-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
+                        <button id="login-button" class="ml-4 inline-flex items-center btn-gradient text-white font-semibold px-4 py-2 rounded-lg shadow-sm text-sm hover:scale-105 transform transition-transform duration-200">Log In</button>
+                    </div>
+                </div>
+                 <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-slate-500 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500">
+                        <span class="sr-only">Open main menu</span>
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+         <!-- Mobile menu, show/hide based on menu state. -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                 <a href="#home" class="text-slate-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Home</a>
+                 <a href="#analyzer" class="text-slate-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">Analyzer</a>
+                 <a href="#news" class="text-slate-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">News Feed</a>
+                 <a href="#about" class="text-slate-600 hover:text-indigo-600 block px-3 py-2 rounded-md text-base font-medium">About</a>
+                 <button id="mobile-login-button" class="w-full mt-2 text-left btn-gradient text-white font-semibold px-3 py-2 rounded-lg shadow-sm text-base">Log In</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-16">
+        <!-- Hero Section -->
+        <section id="home" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 leading-tight">
+                    Fighting Misinformation, <span class="text-indigo-600">One Fact at a Time.</span>
+                </h1>
+                <p class="mt-6 max-w-2xl mx-auto text-lg text-slate-600">
+                    In the digital age, it's harder than ever to distinguish fact from fiction. Veritas provides the tools you need to analyze content and uncover the truth.
+                </p>
+                <div class="mt-8">
+                    <a href="#analyzer" class="inline-block btn-gradient text-white font-semibold px-8 py-3 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105">
+                        Start Analyzing
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Analyzer Section -->
+        <section id="analyzer" class="py-20">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+                    <h2 class="text-3xl font-bold text-center text-slate-900 mb-2">Content Analyzer</h2>
+                    <p class="text-center text-slate-500 mb-8">Submit a link, text, or image to check for potential misinformation.</p>
+
+                    <!-- Tabs -->
+                    <div class="mb-6">
+                        <div class="flex border-b border-slate-200">
+                            <button class="tab-button active flex-1 py-3 text-sm font-semibold text-indigo-600 border-b-2 border-indigo-600 flex items-center justify-center gap-2" onclick="openTab('link')">
+                                <i data-lucide="link"></i> Link
+                            </button>
+                            <button class="tab-button flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-indigo-600 flex items-center justify-center gap-2" onclick="openTab('text')">
+                                <i data-lucide="file-text"></i> Text
+                            </button>
+                            <button class="tab-button flex-1 py-3 text-sm font-semibold text-slate-500 hover:text-indigo-600 flex items-center justify-center gap-2" onclick="openTab('image')">
+                                <i data-lucide="image"></i> Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div id="link" class="tab-content">
+                        <div class="relative">
+                            <input type="url" placeholder="Paste a URL to an article or video..." class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                             <i data-lucide="link" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                        </div>
+                    </div>
+                    <div id="text" class="tab-content hidden">
+                        <textarea placeholder="Paste or type text content here..." rows="5" class="w-full p-4 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"></textarea>
+                    </div>
+                    <div id="image" class="tab-content hidden">
+                        <div id="image-drop-zone" class="border-2 border-dashed border-slate-300 rounded-lg p-8 text-center cursor-pointer hover:border-indigo-500 transition-colors">
+                            <i data-lucide="upload-cloud" class="mx-auto w-12 h-12 text-slate-400"></i>
+                            <p class="mt-2 text-slate-500">Drag & drop an image here, or <span class="text-indigo-600 font-semibold">click to upload</span></p>
+                            <input type="file" id="image-upload" class="hidden" accept="image/*">
+                             <p id="file-name" class="mt-2 text-sm text-slate-600"></p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button id="analyze-button" class="w-full btn-gradient text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex items-center justify-center gap-2">
+                            <i data-lucide="scan-line"></i> Analyze Content
+                        </button>
+                    </div>
+                    
+                    <!-- Analysis Result Area -->
+                    <div id="result-area" class="mt-8 hidden">
+                        <div class="bg-slate-50 p-6 rounded-lg border border-slate-200">
+                             <div class="flex justify-center items-center mb-4" id="spinner">
+                                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                                <p class="ml-3 text-slate-600">Analyzing...</p>
+                             </div>
+                             <div id="analysis-content" class="hidden">
+                                <h3 class="text-xl font-bold text-center text-slate-800 mb-4">Analysis Result</h3>
+                                <div class="text-center p-4 rounded-lg" id="result-banner">
+                                    <p class="font-bold text-lg" id="result-verdict"></p>
+                                    <p class="text-sm" id="result-confidence"></p>
+                                </div>
+                                <div class="mt-4">
+                                    <p class="text-slate-600 text-sm" id="result-summary"></p>
+                                </div>
+                             </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- News Feed Section -->
+        <section id="news" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                    
+                    <!-- Trending News Column -->
+                    <div class="lg:col-span-2">
+                        <h2 class="text-3xl font-bold text-slate-900 mb-6">Trending News</h2>
+                        <div class="space-y-8">
+                            <!-- News Card 1 -->
+                            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col sm:flex-row">
+                                <div class="sm:w-1/3">
+                                    <img class="h-48 w-full object-cover sm:h-full" src="https://placehold.co/400x300/a3bfb8/ffffff?text=Tech" alt="News Image">
+                                </div>
+                                <div class="p-6 sm:w-2/3">
+                                    <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">Technology</div>
+                                    <a href="#" class="block mt-1 text-lg leading-tight font-medium text-black hover:underline">New AI Model Promises Breakthroughs in Climate Science</a>
+                                    <p class="mt-2 text-slate-500">Scientists are hopeful this new development could accelerate predictions for climate change impacts, but some experts urge caution.</p>
+                                </div>
+                            </div>
+                            <!-- News Card 2 -->
+                            <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col sm:flex-row">
+                                <div class="sm:w-1/3">
+                                    <img class="h-48 w-full object-cover sm:h-full" src="https://placehold.co/400x300/d4a5a5/ffffff?text=Health" alt="News Image">
+                                </div>
+                                <div class="p-6 sm:w-2/3">
+                                    <div class="uppercase tracking-wide text-sm text-red-500 font-semibold">Health</div>
+                                    <a href="#" class="block mt-1 text-lg leading-tight font-medium text-black hover:underline">Global Health Initiative Launched to Combat Future Pandemics</a>
+                                    <p class="mt-2 text-slate-500">World leaders have pledged billions to a new fund aimed at preventing and responding to future global health crises.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Fake News Column -->
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900 mb-6">Debunked This Week</h2>
+                        <div class="space-y-6">
+                            <!-- Fake News Card 1 -->
+                            <div class="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                                <div class="flex items-start gap-4">
+                                    <div class="bg-red-100 text-red-600 p-2 rounded-full">
+                                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Viral Photo of Shark Swimming on a Highway is from 2011</p>
+                                        <p class="text-sm text-slate-500 mt-1">A frequently reposted image during floods is not recent and has been digitally altered.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Fake News Card 2 -->
+                             <div class="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                                <div class="flex items-start gap-4">
+                                    <div class="bg-red-100 text-red-600 p-2 rounded-full">
+                                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Claim that Lemons Cure All Cancers is Unsubstantiated</p>
+                                        <p class="text-sm text-slate-500 mt-1">Medical experts confirm that while healthy, lemons are not a miracle cure for complex diseases like cancer.</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <!-- Fake News Card 3 -->
+                             <div class="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300">
+                                <div class="flex items-start gap-4">
+                                    <div class="bg-red-100 text-red-600 p-2 rounded-full">
+                                        <i data-lucide="x-circle" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Audio Clip of "Alien Signals" is a Hoax</p>
+                                        <p class="text-sm text-slate-500 mt-1">The widely circulated audio file was found to be a digitally manipulated sound from a sci-fi movie.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="py-20">
+             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                 <h2 class="text-3xl font-bold text-slate-900">Our Mission</h2>
+                 <p class="mt-4 max-w-3xl mx-auto text-slate-600">
+                    Veritas was born out of a hackathon project with a single goal: to empower individuals with the tools to critically evaluate information. We believe that a well-informed public is the cornerstone of a healthy society. Our platform uses advanced algorithms to detect patterns commonly found in misinformation, helping you make more informed decisions about the content you consume and share.
+                 </p>
+             </div>
+        </section>
+
+    </main>
+    
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md m-4 transform transition-all duration-300 scale-95 opacity-0 relative">
+            <button id="close-modal-button" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <h2 class="text-2xl font-bold text-center text-slate-900 mb-2">Welcome Back</h2>
+            <p class="text-center text-slate-500 mb-8">Log in or create an account to get started.</p>
+
+            <button class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors">
+                <svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#fbc02d" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12	s5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24s8.955,20,20,20	s20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#e53935" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039	l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4caf50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36	c-5.222,0-9.619-3.317-11.28-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1565c0" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238	C42.022,35.244,44,30.036,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                <span class="font-semibold text-slate-700">Sign in with Google</span>
+            </button>
+
+            <div class="my-6 flex items-center">
+                <div class="flex-grow border-t border-slate-300"></div>
+                <span class="mx-4 text-xs font-semibold text-slate-400 uppercase">OR</span>
+                <div class="flex-grow border-t border-slate-300"></div>
+            </div>
+
+            <div class="relative">
+                <input type="tel" placeholder="Enter your mobile number" class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow">
+                <i data-lucide="smartphone" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+            </div>
+            <button class="mt-4 w-full btn-gradient text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300">
+                Continue with Mobile
+            </button>
+
+            <p class="mt-6 text-center text-xs text-slate-500">
+                By continuing, you agree to our <a href="#" class="underline hover:text-slate-700">Terms of Service</a> and <a href="#" class="underline hover:text-slate-700">Privacy Policy</a>.
+            </p>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-slate-300">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="xl:grid xl:grid-cols-3 xl:gap-8">
+                <div class="space-y-8 xl:col-span-1">
+                    <div class="flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="m12 19-7-7 7-7"/><path d="m19 12-7 7"/></svg>
+                        <span class="text-xl font-bold text-white">Veritas</span>
+                    </div>
+                    <p class="text-slate-400 text-base">
+                        Your partner in navigating the complex world of information.
+                    </p>
+                </div>
+                <div class="mt-12 grid grid-cols-2 gap-8 xl:mt-0 xl:col-span-2">
+                    <div class="md:grid md:grid-cols-2 md:gap-8">
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-200 tracking-wider uppercase">Solutions</h3>
+                            <ul class="mt-4 space-y-4">
+                                <li><a href="#analyzer" class="text-base text-slate-400 hover:text-white">Link Analyzer</a></li>
+                                <li><a href="#analyzer" class="text-base text-slate-400 hover:text-white">Text Checker</a></li>
+                                <li><a href="#analyzer" class="text-base text-slate-400 hover:text-white">Image Verification</a></li>
+                            </ul>
+                        </div>
+                        <div class="mt-12 md:mt-0">
+                             <h3 class="text-sm font-semibold text-slate-200 tracking-wider uppercase">Contact</h3>
+                            <ul class="mt-4 space-y-4">
+                                <li><a href="mailto:sagarsuryavamshi11@gmail.com" class="text-base text-slate-400 hover:text-white">sagarsuryavamshi11@gmail.com</a></li>
+                                <li><a href="tel:7012018618" class="text-base text-slate-400 hover:text-white">7012018618</a></li>
+                                 <li><a href="mailto:akasxhyadav@gmail.com" class="text-base text-slate-400 hover:text-white">akasxhydav@gmail.com</a></li>
+                                <li><a href="tel:9467658854" class="text-base text-slate-400 hover:text-white">9467658854</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-slate-700 pt-8">
+                <p class="text-base text-slate-400 xl:text-center">&copy; 2025 Veritas Hackathon Project. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // --- Mobile Menu ---
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuButton.addEventListener('click', () => {
+            const isExpanded = mobileMenuButton.getAttribute('aria-expanded') === 'true';
+            mobileMenuButton.setAttribute('aria-expanded', !isExpanded);
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // --- Tab Functionality ---
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        function openTab(tabName) {
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+            tabButtons.forEach(button => {
+                button.classList.remove('active', 'text-indigo-600', 'border-indigo-600');
+                button.classList.add('text-slate-500');
+            });
+            
+            document.getElementById(tabName).classList.remove('hidden');
+            const activeButton = document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`);
+            activeButton.classList.add('active', 'text-indigo-600', 'border-indigo-600');
+            activeButton.classList.remove('text-slate-500');
+        }
+
+        // --- Image Upload ---
+        const dropZone = document.getElementById('image-drop-zone');
+        const fileInput = document.getElementById('image-upload');
+        const fileNameDisplay = document.getElementById('file-name');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-indigo-500', 'bg-indigo-50');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-indigo-500', 'bg-indigo-50');
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFileName();
+            }
+        });
+
+        fileInput.addEventListener('change', updateFileName);
+
+        function updateFileName() {
+             if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = `File selected: ${fileInput.files[0].name}`;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        }
+        
+// --- REAL Analysis Logic (Connects to Backend) ---
+const analyzeButton = document.getElementById('analyze-button');
+const resultArea = document.getElementById('result-area');
+const spinner = document.getElementById('spinner');
+const analysisContent = document.getElementById('analysis-content');
+
+const resultBanner = document.getElementById('result-banner');
+const resultVerdict = document.getElementById('result-verdict');
+const resultConfidence = document.getElementById('result-confidence');
+const resultSummary = document.getElementById('result-summary');
+
+// Add IDs to your input fields for easy access
+const linkInput = document.querySelector('#link input');
+if (linkInput) linkInput.id = 'link-input';
+const textInput = document.querySelector('#text textarea');
+if (textInput) textInput.id = 'text-input';
+
+analyzeButton.addEventListener('click', async () => {
+    resultArea.classList.remove('hidden');
+    spinner.style.display = 'flex';
+    analysisContent.classList.add('hidden');
+
+    // Determine which tab is active and get the content
+    const activeTab = document.querySelector('.tab-button.active');
+    let contentType = '';
+    let content = '';
+
+    if (activeTab.textContent.includes('Link')) {
+        contentType = 'link';
+        content = document.getElementById('link-input').value;
+    } else if (activeTab.textContent.includes('Text')) {
+        contentType = 'text';
+        content = document.getElementById('text-input').value;
+    }
+
+    if (!content.trim()) {
+        alert("Please enter some content to analyze.");
+        resultArea.classList.add('hidden');
+        return;
+    }
+
+    try {
+        // This is the API call to your Flask backend!
+        const response = await fetch('http://127.0.0.1:5000/analyze', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: contentType,
+                content: content,
+            }),
+        });
+
+        const result = await response.json();
+        
+        spinner.style.display = 'none';
+        analysisContent.classList.remove('hidden');
+        
+        // Handle potential errors from the backend
+        if (response.status !== 200) {
+             resultBanner.className = 'text-center p-4 rounded-lg bg-yellow-100';
+             resultVerdict.textContent = "Analysis Error";
+             resultVerdict.className = "font-bold text-lg text-yellow-800";
+             resultConfidence.textContent = '';
+             resultSummary.textContent = result.error || "An unknown error occurred.";
+             return;
+        }
+
+        // Update the UI with the results from the backend
+        resultVerdict.textContent = result.verdict;
+        resultConfidence.textContent = `${result.confidence} Confidence`;
+        resultSummary.textContent = result.summary;
+
+        resultBanner.classList.remove('bg-red-100', 'bg-green-100');
+        if (result.verdict.includes('Misinformation')) {
+            resultBanner.classList.add('bg-red-100');
+            resultVerdict.className = "font-bold text-lg text-red-800";
+            resultConfidence.className = "text-sm text-red-700";
+        } else {
+            resultBanner.classList.add('bg-green-100');
+            resultVerdict.className = "font-bold text-lg text-green-800";
+            resultConfidence.className = "text-sm text-green-700";
+        }
+
+    } catch (error) {
+        console.error('Error:', error);
+        spinner.style.display = 'none';
+        analysisContent.classList.remove('hidden');
+        // Display a generic error if the backend can't be reached
+        resultBanner.className = 'text-center p-4 rounded-lg bg-gray-200';
+        resultVerdict.textContent = "Connection Error";
+        resultVerdict.className = "font-bold text-lg text-gray-800";
+        resultConfidence.textContent = '';
+        resultSummary.textContent = "Could not connect to the analysis server. Please make sure the backend is running and try again.";
+    }
+});
+// --- Login Modal Logic ---
+const loginButton = document.getElementById('login-button');
+const mobileLoginButton = document.getElementById('mobile-login-button');
+const loginModal = document.getElementById('login-modal');
+const closeModalButton = document.getElementById('close-modal-button');
+const modalContent = document.getElementById('modal-content');
+
+function openModal() {
+    loginModal.classList.remove('hidden');
+    loginModal.classList.add('flex');
+    // Use a short timeout to allow the display property to apply before starting the transition
+    setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+    }, 10);
+}
+
+function closeModal() {
+    modalContent.classList.add('scale-95', 'opacity-0');
+    // Wait for the transition to finish before hiding the modal
+    setTimeout(() => {
+        loginModal.classList.add('hidden');
+        loginModal.classList.remove('flex');
+    }, 300); // This duration must match the transition duration in your CSS/HTML
+}
+
+if (loginButton) loginButton.addEventListener('click', openModal);
+if (mobileLoginButton) mobileLoginButton.addEventListener('click', openModal);
+if (closeModalButton) closeModalButton.addEventListener('click', closeModal);
+
+// Close modal if user clicks on the background overlay
+if (loginModal) {
+    loginModal.addEventListener('click', (event) => {
+        // Check if the click is on the modal background itself, not the content
+        if (event.target === loginModal) {
+            closeModal();
+        }
+    });
+}
+        
+    </script>
+</body>
+</html>
