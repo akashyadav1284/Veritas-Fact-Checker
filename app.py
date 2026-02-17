@@ -5,92 +5,115 @@ from flask_cors import CORS
 import requests
 from bs4 import BeautifulSoup
 import re
+import joblib
+import numpy as np
 
 # --- INITIALIZE THE FLASK APP ---
 app = Flask(__name__)
 CORS(app)
 
-# --- CONFIGURATION ---
-# IMPORTANT: Paste your FREE Serper API Key here
-SERPER_API_KEY = "YOUR_SERPER_API_KEY_HERE"
+# --- MODEL LOADING ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model.joblib")
+VECTORIZER_PATH = os.path.join(BASE_DIR, "vectorizer.joblib")
+
+classifier = None
+vectorizer = None
+
+try:
+    classifier = joblib.load(MODEL_PATH)
+    vectorizer = joblib.load(VECTORIZER_PATH)
+    print("✅ Loaded classification model and vectorizer.")
+except Exception as e:
+    print(f"⚠️ Could not load model/vectorizer: {e}")
 
 # --- HELPER FUNCTIONS ---
 
 def scrape_text_from_url(url):
     """Fetches and cleans text from a URL."""
     try:
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'}
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/58.0.3029.110 Safari/537.36"
+            )
+        }
         response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        for script_or_style in soup(['script', 'style']):
+        soup = BeautifulSoup(response.content, "html.parser")
+        for script_or_style in soup(["script", "style"]):
             script_or_style.decompose()
-        text = ' '.join(t.strip() for t in soup.stripped_strings)
-        return re.sub(r'\s+', ' ', text)[:2000] # Limit text length for analysis
+        text = " ".join(t.strip() for t in soup.stripped_strings)
+        # Limit text length for analysis so it doesn't blow up the vectorizer
+        return re.sub(r"\s+", " ", text)[:2000]
     except Exception:
         return "Error: Could not retrieve content from the URL."
 
-def analyze_with_google_search(claim):
+
+def analyze_with_model(content_text: str):
     """
-    Uses Google Search (via Serper) to perform a multi-step fact-check.
+    Uses the locally trained TF-IDF + PassiveAggressive model
+    to classify news as REAL or FAKE, and maps that to a
+    human-friendly verdict.
     """
-    if not SERPER_API_KEY or "YOUR_SERPER" in SERPER_API_KEY:
+    if classifier is None or vectorizer is None:
         return {
             "verdict": "Configuration Error",
-            "summary": "Serper API key is not configured correctly."
+            "confidence": "0%",
+            "summary": (
+                "The classification model is not available. "
+                "Please run 'python train_model.py' to train it "
+                "and then restart the Flask server."
+            ),
+            "error": "Model or vectorizer not loaded.",
         }
 
-    headers = {'X-API-KEY': SERPER_API_KEY, 'Content-Type': 'application/json'}
-    
-    # --- Step 1: Proactive Debunking Search ---
-    # We search for the claim along with words that indicate a fact-check.
-    debunk_query = f'"{claim}" fact check OR hoax OR false OR debunked'
     try:
-        response = requests.post('https://google.serper.dev/search', headers=headers, json={'q': debunk_query})
-        response.raise_for_status()
-        results = response.json().get('organic', [])
-        
-        for result in results[:3]: # Check the top 3 debunking results
-            snippet = result.get('snippet', '').lower()
-            title = result.get('title', '').lower()
-            # If we find strong debunking language, we can be confident it's misleading.
-            if any(word in snippet or word in title for word in ['false', 'hoax', 'misleading', 'incorrect', 'not true']):
-                return {
-                    "verdict": "Misleading",
-                    "summary": f"Fact-checking sources indicate this claim is false or misleading. A top result from '{result.get('link')}' disputes the claim."
-                }
-    except Exception as e:
-        print(f"Debunk search failed: {e}")
-        # Continue to the next step even if this search fails
+        features = vectorizer.transform([content_text])
+        label = classifier.predict(features)[0]  # 'FAKE' or 'REAL'
 
-    # --- Step 2: Corroboration Search ---
-    # If no debunking was found, we search for the claim on reputable news sites.
-    corroboration_query = f'"{claim}" site:bbc.com OR site:reuters.com OR site:timesofindia.indiatimes.com OR site:thehindu.com'
-    try:
-        response = requests.post('https://google.serper.dev/search', headers=headers, json={'q': corroboration_query})
-        response.raise_for_status()
-        results = response.json().get('organic', [])
-        
-        if results: # If we find ANY result from these top-tier sources, it's likely factual.
-            return {
-                "verdict": "Likely Factual",
-                "summary": f"The claim is supported by reports from reputable news sources, including '{results[0].get('link')}'."
-            }
-    except Exception as e:
-        print(f"Corroboration search failed: {e}")
-        # Fall through to the final verdict
+        # Estimate confidence from the decision function
+        try:
+            decision = classifier.decision_function(features)[0]
+            # Map margin -> (50% .. 100%) style confidence
+            raw_conf = 1.0 / (1.0 + np.exp(-abs(decision)))
+            confidence_pct = int(raw_conf * 100)
+        except Exception:
+            # Fallback if decision_function is unavailable
+            confidence_pct = 90
 
-    # --- Step 3: Fallback Verdict ---
-    # If neither search provided a conclusive answer, the claim is unverified.
-    return {
-        "verdict": "Unverified Claim",
-        "summary": "We could not find sufficient information from fact-checking or major news sources to verify this claim. Please proceed with caution."
-    }
+        if label == "FAKE":
+            verdict = "Misinformation"
+            summary = (
+                "The content closely matches patterns seen in known fake news "
+                "from the training data. Treat this as likely false or misleading."
+            )
+        else:
+            verdict = "Likely Factual"
+            summary = (
+                "The content is stylistically similar to reliable news articles "
+                "in the training data, but you should still cross-check with "
+                "trusted sources for important decisions."
+            )
+
+        return {
+            "verdict": verdict,
+            "confidence": f"{confidence_pct}%",
+            "summary": summary,
+        }
+    except Exception as e:
+        return {
+            "verdict": "Analysis Error",
+            "confidence": "0%",
+            "summary": "An error occurred while analyzing the content.",
+            "error": str(e),
+        }
 
 # --- MAIN API ENDPOINT ---
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    """Receives content from the frontend and uses Google Search for analysis."""
+    """Receives content from the frontend and uses the ML model for analysis."""
     data = request.get_json()
     content_type = data.get('type')
     content = data.get('content')
@@ -101,20 +124,27 @@ def analyze():
     elif content_type == 'link':
         analysis_text = scrape_text_from_url(content)
         if analysis_text.startswith("Error:"):
-            return jsonify({"verdict": "Content Error", "confidence": "0%", "summary": analysis_text}), 400
+            return jsonify({
+                "verdict": "Content Error",
+                "confidence": "0%",
+                "summary": analysis_text,
+                "error": analysis_text
+            }), 400
 
     if not analysis_text or len(analysis_text.strip()) < 10:
-        return jsonify({"verdict": "Input Error", "confidence": "0%", "summary": "Content is too short."}), 400
+        msg = "Content is too short for meaningful analysis."
+        return jsonify({
+            "verdict": "Input Error",
+            "confidence": "0%",
+            "summary": msg,
+            "error": msg
+        }), 400
 
-    result = analyze_with_google_search(analysis_text)
-    
-    # Add a confidence score based on the verdict
-    if result["verdict"] == "Misleading":
-        result["confidence"] = "95%"
-    elif result["verdict"] == "Likely Factual":
-        result["confidence"] = "92%"
-    else: # Unverified or Error
-        result["confidence"] = "50%"
+    result = analyze_with_model(analysis_text)
+
+    # If the model reported a configuration or analysis error, surface that clearly
+    if result.get("verdict") in {"Configuration Error", "Analysis Error"}:
+        return jsonify(result), 500
 
     return jsonify(result)
 

@@ -469,7 +469,7 @@ analyzeButton.addEventListener('click', async () => {
              resultVerdict.textContent = "Analysis Error";
              resultVerdict.className = "font-bold text-lg text-yellow-800";
              resultConfidence.textContent = '';
-             resultSummary.textContent = result.error || "An unknown error occurred.";
+             resultSummary.textContent = result.error || result.summary || "An unknown error occurred.";
              return;
         }
 
@@ -478,15 +478,23 @@ analyzeButton.addEventListener('click', async () => {
         resultConfidence.textContent = `${result.confidence} Confidence`;
         resultSummary.textContent = result.summary;
 
-        resultBanner.classList.remove('bg-red-100', 'bg-green-100');
-        if (result.verdict.includes('Misinformation')) {
+        resultBanner.classList.remove('bg-red-100', 'bg-green-100', 'bg-yellow-100');
+
+        if (result.verdict === 'Misinformation') {
+            // Clearly flagged as fake / misleading
             resultBanner.classList.add('bg-red-100');
             resultVerdict.className = "font-bold text-lg text-red-800";
             resultConfidence.className = "text-sm text-red-700";
-        } else {
+        } else if (result.verdict === 'Likely Factual') {
+            // Likely true
             resultBanner.classList.add('bg-green-100');
             resultVerdict.className = "font-bold text-lg text-green-800";
             resultConfidence.className = "text-sm text-green-700";
+        } else {
+            // Any other verdict (e.g., Input Error, Configuration Error, Uncertain)
+            resultBanner.classList.add('bg-yellow-100');
+            resultVerdict.className = "font-bold text-lg text-yellow-800";
+            resultConfidence.className = "text-sm text-yellow-700";
         }
 
     } catch (error) {

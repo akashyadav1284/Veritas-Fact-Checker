@@ -1,3 +1,5 @@
 {
-    "python-envs.pythonProjects": []
+    "python-envs.pythonProjects": [],
+    "livePreview.hostIP": " 172.21.129.181",
+    "liveServer.settings.port": 5501
 }
