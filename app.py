@@ -7,6 +7,8 @@ from bs4 import BeautifulSoup
 import re
 import joblib
 import numpy as np
+from flask import send_from_directory
+
 
 # --- INITIALIZE THE FLASK APP ---
 app = Flask(__name__)
@@ -149,9 +151,11 @@ def analyze():
     return jsonify(result)
 
 # --- BASIC SERVER ROUTES ---
-@app.route('/')
-def index():
-    return "Veritas Backend with Google Search is running!"
+@app.route("/")
+def home():
+    return send_from_directory(".", "index.html")
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
