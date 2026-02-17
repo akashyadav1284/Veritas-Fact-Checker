@@ -44,7 +44,21 @@ pip install -r requirements.txt
 train model--
 python train_model.py
 
-
+Google Auth Setup--
+1. Go to https://console.cloud.google.com/
+2. Create or select a project
+3. APIs & Services > Credentials > Create Credentials > OAuth client ID
+4. Application type: Web application
+5. Name: e.g. Veritas Web
+6. Authorized JavaScript origins:
+   - http://localhost:8000
+   - http://127.0.0.1:8000
+   - https://veritas-frontend-56tw.onrender.com (or your static site URL)
+   - https://veritas-fact-checker.onrender.com (or your backend URL)
+7. Copy the Client ID
+8. Add environment variable on Render (backend Web Service):
+   - Key: GOOGLE_CLIENT_ID
+   - Value: <your-client-id>
 
 summary--
 Veritas – Misinformation Detector is a machine-learning–powered web application designed to help users quickly determine whether news content is likely misinformation or factually reliable. The project combines a Flask backend, a responsive Tailwind-based frontend, and a locally trained ML model using TF-IDF vectorization with a PassiveAggressiveClassifier trained on Fake and Real news datasets. Users can analyze either raw article text or a URL, where the backend scrapes the article content and classifies it as Misinformation or Likely Factual, along with a confidence score and summary explanation. The project includes key components such as app.py for the API server, train_model.py for training the classifier, index.html for the user interface, and saved model files (model.joblib and vectorizer.joblib). To run locally, users can clone the repository, create a virtual environment, install dependencies from requirements.txt, optionally retrain the model, start the Flask server using python app.py, and open the frontend in a browser. The application exposes a POST /analyze API endpoint that accepts text or link input and returns a prediction result. While Veritas provides helpful automated analysis, it is a pattern-based classifier and should be used as a support tool rather than a definitive source of truth, and important information should always be verified using trusted sources.

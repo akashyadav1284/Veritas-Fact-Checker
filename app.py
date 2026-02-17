@@ -9,10 +9,12 @@ import joblib
 import numpy as np
 from flask import send_from_directory
 
-
 # --- INITIALIZE THE FLASK APP ---
 app = Flask(__name__)
 CORS(app)
+
+# --- GOOGLE AUTH ---
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 # --- MODEL LOADING ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -149,6 +151,44 @@ def analyze():
         return jsonify(result), 500
 
     return jsonify(result)
+
+# --- GOOGLE AUTH ROUTES ---
+@app.route("/api/config", methods=["GET"])
+def api_config():
+    """Returns public config (e.g. Google Client ID) for the frontend."""
+    return jsonify({"googleClientId": GOOGLE_CLIENT_ID})
+
+
+@app.route("/auth/google", methods=["POST"])
+def auth_google():
+    """Verifies Google ID token and returns user info."""
+    if not GOOGLE_CLIENT_ID:
+        return jsonify({"error": "Google auth not configured"}), 500
+
+    data = request.get_json()
+    credential = data.get("credential") if data else None
+    if not credential:
+        return jsonify({"error": "Missing credential"}), 400
+
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as google_requests
+
+        idinfo = id_token.verify_oauth2_token(
+            credential, google_requests.Request(), GOOGLE_CLIENT_ID
+        )
+        if idinfo["aud"] != GOOGLE_CLIENT_ID:
+            return jsonify({"error": "Invalid audience"}), 400
+
+        user = {
+            "name": idinfo.get("name", ""),
+            "email": idinfo.get("email", ""),
+            "picture": idinfo.get("picture", ""),
+        }
+        return jsonify({"success": True, "user": user})
+    except ValueError as e:
+        return jsonify({"error": "Invalid token", "detail": str(e)}), 401
+
 
 # --- BASIC SERVER ROUTES ---
 @app.route("/")
